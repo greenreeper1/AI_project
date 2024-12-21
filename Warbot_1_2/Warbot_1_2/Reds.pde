@@ -120,13 +120,15 @@ class RedBase extends Base implements RedRobot {
   // ------
   // > target = the target we want to predict the position
   //
-  PVector predictFuturePosition(Robot target) {
+PVector predictFuturePosition(Robot target) {
     PVector futurePos = target.pos.copy();
     if (target.speed > 0) {
-      futurePos.add(PVector.fromAngle(target.heading).mult(target.speed));
+        PVector targetVelocity = PVector.fromAngle(target.heading).mult(target.speed);
+        float timeToImpact = distance(target) / bulletSpeed;
+        futurePos.add(targetVelocity.mult(timeToImpact));
     }
     return futurePos;
-  }
+}
 
   //
   // handleMessage
@@ -611,25 +613,45 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
     }
   }
 
+PVector predictFuturePosition(Robot target) {
+    // Copy the target's current position
+    PVector futurePos = new PVector(target.pos.x, target.pos.y);
+
+    // Ensure target speed and heading are valid
+    if (target.speed > 0) {
+        // Calculate the time required for the rocket to reach the target
+        float timeToImpact = this.distance(target) / this.speed;
+
+        // Calculate the target's future position based on its heading and speed
+        PVector velocity = PVector.fromAngle(target.heading).mult(target.speed);
+        futurePos.add(velocity.mult(timeToImpact));
+    }
+
+    return futurePos;
+}
+
   //
   // selectTarget
   // ============
   // > try to localize a target
   //
-  void selectTarget() {
-    // look for the closest ennemy robot
-    Robot bob = (Robot)minDist(perceiveRobots(ennemy));
-    if (bob != null) {
-      // if one found, record the position and breed of the target
-      brain[0].x = bob.pos.x;
-      brain[0].y = bob.pos.y;
-      brain[0].z = bob.breed;
-      // locks the target
-      brain[4].y = 1;
-    } else
-      // no target found
-      brain[4].y = 0;
-  }
+void selectTarget() {
+    Robot closestEnemy = (Robot)minDist(perceiveRobots(ennemy));
+    if (closestEnemy != null) {
+        PVector predictedPos = predictFuturePosition(closestEnemy);
+        float angleToTarget = towards(predictedPos);
+        
+        if (perceiveRobotsInCone(friend, angleToTarget) == null) {
+            if (closestEnemy.breed == LAUNCHER || distance(closestEnemy) < 100) {
+                brain[0].x = predictedPos.x;
+                brain[0].y = predictedPos.y;
+                brain[0].z = closestEnemy.breed;
+                brain[4].y = 1;
+            }
+        }
+    }
+}
+
 
   //
   // target
