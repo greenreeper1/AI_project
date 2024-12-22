@@ -635,11 +635,8 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
   }
 
   void goTowardsTarget() {
-    // Calculate the angle to the target
-    float angleToTarget = towards(brain[0]);
-
-    // If there are no friendlies in the way, move towards the target
-    if (perceiveRobotsInCone(friend, angleToTarget) == null) {
+    if (distance(brain[0]) > 5) {
+      float angleToTarget = towards(brain[0]);
       heading = angleToTarget;
       tryToMoveForward();
     }
@@ -666,16 +663,27 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
         }
     }
 
-    // if no current target, check for messages
-    if (brain[4].x == 0 && messages.size() > 0) {
-        Message msg = messages.get(0);
+
+    // if no current target, check for messages and get the target that is the closest
+    if (!target()) {
+      Message msg;
+      float d = width;
+      PVector p = new PVector();
+      for (int i=0; i<messages.size(); i++) {
+        msg = messages.get(i);
         if (msg.type == INFORM_ABOUT_TARGET) {
-          // record the position of the target
-          brain[0].x = msg.args[0];
-          brain[0].y = msg.args[1];
-          brain[0].z = msg.args[2];
-          brain[4].y = 1;
+          p.x = msg.args[0];
+          p.y = msg.args[1];
+          if (distance(p) < d) {
+            brain[0].x = p.x;
+            brain[0].y = p.y;
+            brain[0].z = msg.args[2];
+            d = distance(p);
+            brain[4].y = 1;
+          }
         }
+      }
+      messages.clear();
     }
   }
 
