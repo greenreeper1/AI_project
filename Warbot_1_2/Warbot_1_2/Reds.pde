@@ -25,7 +25,7 @@ interface RedRobot {
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// The code for the green bases
+// The code for the red bases
 //
 ///////////////////////////////////////////////////////////////////////////
 class RedBase extends Base implements RedRobot {
@@ -161,7 +161,7 @@ PVector predictFuturePosition(Robot target) {
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// The code for the green explorers
+// The code for the red explorers
 //
 ///////////////////////////////////////////////////////////////////////////
 // map of the brain:
@@ -355,7 +355,7 @@ class RedExplorer extends Explorer implements RedRobot {
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// The code for the green harvesters
+// The code for the red harvesters
 //
 ///////////////////////////////////////////////////////////////////////////
 // map of the brain:
@@ -559,7 +559,7 @@ class RedHarvester extends Harvester implements RedRobot {
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// The code for the green rocket launchers
+// The code for the red rocket launchers
 //
 ///////////////////////////////////////////////////////////////////////////
 // map of the brain:
@@ -648,6 +648,18 @@ void selectTarget() {
                 brain[0].z = closestEnemy.breed;
                 brain[4].y = 1;
             }
+        }
+    }
+
+    // if no current target, check for messages
+    if (brain[4].x == 0 && messageQueue.size() > 0) {
+        Message msg = messageQueue.get(0);
+        if (msg.type == INFORM_ABOUT_TARGET) {
+          // record the position of the target
+          brain[0].x = msg.args[0];
+          brain[0].y = msg.args[1];
+          brain[0].z = msg.args[2];
+          brain[4].y = 1;
         }
     }
 }
