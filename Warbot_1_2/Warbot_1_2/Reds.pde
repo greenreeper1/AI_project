@@ -600,42 +600,57 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
     if (brain[4].x == 1) {
       // if in "go back to base" mode
       goBackToBase();
-    } else {
+    }
+    else {
       // try to find a target
       selectTarget();
       // if target identified
-      if (target())
-        // shoot on the target
+      if (target()){
+        // move towards and shot the target
+        goTowardsTarget();
         launchBullet(towards(brain[0]));
-      else
+      }
+      else {
         // else explore randomly
         randomMove(45);
+      }
     }
   }
 
-PVector predictFuturePosition(Robot target) {
-    // Copy the target's current position
-    PVector futurePos = new PVector(target.pos.x, target.pos.y);
+  PVector predictFuturePosition(Robot target) {
+      // Copy the target's current position
+      PVector futurePos = new PVector(target.pos.x, target.pos.y);
 
-    // Ensure target speed and heading are valid
-    if (target.speed > 0) {
-        // Calculate the time required for the rocket to reach the target
-        float timeToImpact = this.distance(target) / this.speed;
+      // Ensure target speed and heading are valid
+      if (target.speed > 0) {
+          // Calculate the time required for the rocket to reach the target
+          float timeToImpact = this.distance(target) / this.speed;
 
-        // Calculate the target's future position based on its heading and speed
-        PVector velocity = PVector.fromAngle(target.heading).mult(target.speed);
-        futurePos.add(velocity.mult(timeToImpact));
+          // Calculate the target's future position based on its heading and speed
+          PVector velocity = PVector.fromAngle(target.heading).mult(target.speed);
+          futurePos.add(velocity.mult(timeToImpact));
+      }
+
+      return futurePos;
+  }
+
+  void goTowardsTarget() {
+    // Calculate the angle to the target
+    float angleToTarget = towards(brain[0]);
+
+    // If there are no friendlies in the way, move towards the target
+    if (perceiveRobotsInCone(friend, angleToTarget) == null) {
+      heading = angleToTarget;
+      tryToMoveForward();
     }
-
-    return futurePos;
-}
+  }
 
   //
   // selectTarget
   // ============
   // > try to localize a target
   //
-void selectTarget() {
+  void selectTarget() {
     Robot closestEnemy = (Robot)minDist(perceiveRobots(ennemy));
     if (closestEnemy != null) {
         PVector predictedPos = predictFuturePosition(closestEnemy);
@@ -652,8 +667,8 @@ void selectTarget() {
     }
 
     // if no current target, check for messages
-    if (brain[4].x == 0 && messageQueue.size() > 0) {
-        Message msg = messageQueue.get(0);
+    if (brain[4].x == 0 && messages.size() > 0) {
+        Message msg = messages.get(0);
         if (msg.type == INFORM_ABOUT_TARGET) {
           // record the position of the target
           brain[0].x = msg.args[0];
@@ -662,7 +677,7 @@ void selectTarget() {
           brain[4].y = 1;
         }
     }
-}
+  }
 
 
   //
