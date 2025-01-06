@@ -207,7 +207,7 @@ class RedExplorer extends Explorer implements RedRobot {
       // ...or explore randomly
       randomMove(45);
     }
-
+    dodgeIncomingProjectile();
     // tries to localize ennemy bases
     lookForEnnemyBase();
     // inform harvesters about food sources
@@ -217,6 +217,24 @@ class RedExplorer extends Explorer implements RedRobot {
 
     // clear the message queue
     flushMessages();
+  }
+  
+  // Check for incoming projectiles (e.g., bullets or FAFs)
+  void dodgeIncomingProjectile() {
+    // Look for projectiles (e.g., Fafs)
+    Bullet incomingBullet = (Bullet)oneOf(perceiveFafs()); 
+
+    if (incomingBullet != null) {
+      float distanceToBullet = distance(incomingBullet); // Distance to the incoming bullet
+      float timeToImpact = distanceToBullet / bulletSpeed; // Time to impact
+
+      // If the bullet is close enough to hit the robot, take evasive action
+      if (timeToImpact < 2) {
+        // Randomly change direction to dodge the bullet
+        right(random(90, 180));  // Rotate by 90-180 degrees
+        forward(speed);           // Move forward after the dodge
+      }
+    }
   }
 
   //
@@ -389,7 +407,7 @@ class RedHarvester extends Harvester implements RedRobot {
   void go() {
     // handle messages received
     handleMessages();
-
+    dodgeIncomingProjectile();
     // check for the closest burger
     Burger b = (Burger)minDist(perceiveBurgers());
     if ((b != null) && (distance(b) <= 2))
@@ -420,6 +438,24 @@ class RedHarvester extends Harvester implements RedRobot {
     } else
       // if not in the "go back" state, explore and collect food
       goAndEat();
+  }
+  
+  // Check for incoming projectiles (e.g., bullets or FAFs)
+  void dodgeIncomingProjectile() {
+    // Look for projectiles (e.g., Fafs)
+    Bullet incomingBullet = (Bullet)oneOf(perceiveFafs());
+
+    if (incomingBullet != null) {
+      float distanceToBullet = distance(incomingBullet); // Distance to the incoming bullet
+      float timeToImpact = distanceToBullet / bulletSpeed; // Time to impact
+
+      // If the bullet is close enough to hit the robot, take evasive action
+      if (timeToImpact < 2) {
+        // Randomly change direction to dodge the bullet
+        right(random(90, 180));  // Rotate by 90-180 degrees
+        forward(speed);           // Move forward after the dodge
+      }
+    }
   }
 
   //
@@ -602,6 +638,7 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
       goBackToBase();
     }
     else {
+      dodgeIncomingProjectile();
       // try to find a target
       selectTarget();
       // if target identified
@@ -613,6 +650,24 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
       else {
         // else explore randomly
         randomMove(45);
+      }
+    }
+  }
+  
+  // Check for incoming projectiles (e.g., bullets or FAFs)
+  void dodgeIncomingProjectile() {
+    // Look for projectiles (e.g., FaFs)
+    Bullet incomingBullet = (Bullet)oneOf(perceiveFafs());
+
+    if (incomingBullet != null) {
+      float distanceToBullet = distance(incomingBullet); // Distance to the incoming bullet
+      float timeToImpact = distanceToBullet / bulletSpeed; // Time to impact
+  
+      // If the bullet is close enough to hit the robot, take evasive action
+      if (timeToImpact < 2) {
+        // Randomly change direction to dodge the bullet
+        right(random(90, 180));  // Rotate by 90-180 degrees
+        forward(speed);           // Move forward after the dodge
       }
     }
   }
