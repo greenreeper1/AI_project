@@ -640,18 +640,32 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
     else {
       dodgeIncomingProjectile();
       // try to find a target
-      selectTarget();
-      // if target identified
-      if (target()){
-        // move towards and shot the target
-        goTowardsTarget();
-        launchBullet(towards(brain[0]));
-      }
-      else {
-        // else explore randomly
+      Robot target = selectTarget();
+      // If target identified
+      if (target() && target!=null) {
+        // Ensure the target is alive
+        if (isTargetAlive(target)) {
+          // Move towards and shoot the target
+          goTowardsTarget();
+          launchBullet(towards(brain[0]));
+        } else {
+          randomMove(45);  // Explore randomly if the target is dead
+        }
+      } else {
+         // If no target, explore randomly
         randomMove(45);
       }
     }
+  }
+  
+  // Check if the target is alive
+  boolean isTargetAlive(Robot target) {
+    // Check the target's health or existence
+    // This assumes that the target has a method to check if it's alive
+    if (target!=null){
+      return target.energy > 0;
+    }
+    return false;
   }
   
   // Check for incoming projectiles (e.g., bullets or FAFs)
@@ -702,7 +716,7 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
   // ============
   // > try to localize a target
   //
-  void selectTarget() {
+  Robot selectTarget() {
     Robot closestEnemy = (Robot)minDist(perceiveRobots(ennemy));
     if (closestEnemy != null) {
         PVector predictedPos = predictFuturePosition(closestEnemy);
@@ -740,6 +754,10 @@ class RedRocketLauncher extends RocketLauncher implements RedRobot {
       }
       messages.clear();
     }
+    if (isTargetAlive(closestEnemy)){
+      return closestEnemy;
+    }
+    return null;
   }
 
 
